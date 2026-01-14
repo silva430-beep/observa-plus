@@ -85,6 +85,10 @@
         <label>Lugar específico</label>
         <input type="text" placeholder="Ej: Pasillo técnico, laboratorio, acceso" />
       </div>
+            <div>
+        <label>Fecha (dd-mm-aaaa)</label>
+        <input type="date" id="fecha" required />
+      </div>
     </div>
 
     <label>Tipo de novedad</label>
@@ -206,7 +210,7 @@
     const edificio = document.getElementById('edificio').value;
     const tipo = document.getElementById('tipo').value;
     const descripcion = document.querySelector('textarea').value;
-    const mensaje = `*REPORTE OBSERVA+*\n\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripcion: ${descripcion}\n\nEnviado desde OBSERVA+ - Observacion y Prevencin Operativa`;
+    const mensaje = `*REPORTE OBSERVA+*\n\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripcion: ${descripcion}\n\nEnviado desde OBSERVA+ - Observacion y prevención Operativa`;
     const enlace = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(enlace, '_blank');
   }
