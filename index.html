@@ -155,6 +155,7 @@
     </div>
 
     <button onclick="sendMail()">Enviar Reporte</button>
+        <button onclick="compartirWhatsApp()" style="margin-top:10px; background:#25D366; width:100%;">📱 Compartir por WhatsApp</button>
   </div>
 
 </main>
@@ -200,6 +201,14 @@
   function cerrarCamara(){
     if(stream) stream.getTracks().forEach(t => t.stop());
     document.getElementById('cameraContainer').classList.add('hidden');
+  }
+    function compartirWhatsApp(){
+    const edificio = document.getElementById('edificio').value;
+    const tipo = document.getElementById('tipo').value;
+    const descripcion = document.querySelector('textarea').value;
+    const mensaje = `*REPORTE OBSERVA+*\n\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripcion: ${descripcion}\n\nEnviado desde OBSERVA+ - Observacion y Prevencin Operativa`;
+    const enlace = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
+    window.open(enlace, '_blank');
   }
 </script>
 
