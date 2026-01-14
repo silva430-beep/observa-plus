@@ -9,15 +9,23 @@
       --bg:#f6f8fb; --card:#ffffff; --primary:#1f6f5c; --secondary:#f2a365; --accent:#0b3c5d; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --text:#1f2937;
     }
     body { font-family: 'Segoe UI', Arial, sans-serif; background:var(--bg); margin:0; color:var(--text); }
+    .splash { background:linear-gradient(135deg,var(--accent),var(--primary)); color:white; padding:40px 20px; text-align:center; min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .splash h1{margin:0; font-size:3em; display:flex; align-items:center; justify-content:center; gap:15px;}
+    .splash .shield{width:50px; height:50px}
+    .splash p{margin:10px 0 30px; opacity:0.9; font-size:1.1em}
+    .splash .card-info { background:rgba(255,255,255,0.15); border-radius:15px; padding:25px; max-width:500px; margin:20px 0; backdrop-filter:blur(10px); }
+    .splash button { background:white; color:var(--primary); font-weight:700; padding:14px 28px; border:none; border-radius:50px; cursor:pointer; font-size:1.1em; margin-top:20px; }
+    .splash button:hover { filter:brightness(0.9); }
     header { background:linear-gradient(135deg,var(--accent),var(--primary)); color:white; padding:18px; text-align:center; }
     header .brand{display:flex; align-items:center; justify-content:center; gap:10px}
     header .shield{width:34px; height:34px}
-    main { padding:20px; max-width:980px; margin:auto; }
+    main { padding:20px; max-width:980px; margin:auto; display:none; }
+    main.active { display:block; }
     .card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:16px; box-shadow:0 10px 20px rgba(0,0,0,0.08); }
     h2{margin-top:0}
     label { display:block; margin-top:12px; font-weight:600; }
     input, select, textarea, button {
-      width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid #d1d5db; font-size:14px;
+      width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid #d1d5db; font-size:14px; box-sizing:border-box;
     }
     select[multiple]{height:110px}
     button { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; font-weight:700; cursor:pointer; border:none; }
@@ -35,7 +43,19 @@
 </head>
 <body>
 
-<header>
+<div class="splash" id="splash">
+  <svg class="shield" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16.25 16.5 20.74 12 22C7.5 20.74 4 16.25 4 11V6L12 2Z" fill="#ffffff" opacity="0.95"/></svg>
+  <h1>OBSERVA+</h1>
+  <p>Observación y Prevención Operativa</p>
+  <div class="card-info">
+    <p style="margin-top:0">App progresiva para monitoreo y observación en tiempo real</p>
+    <p>Instalada desde GitHub Pages</p>
+    <p style="font-size:0.9em; opacity:0.9">Es una PWA (Progressive Web App) que puedes instalar como app en tu dispositivo y usar sin conexión a internet.</p>
+  </div>
+  <button onclick="iniciarApp()">Comenzar →</button>
+</div>
+
+<header id="header" class="hidden">
   <div class="brand">
     <svg class="shield" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L20 6V11C20 16.25 16.5 20.74 12 22C7.5 20.74 4 16.25 4 11V6L12 2Z" fill="#ffffff" opacity="0.95"/></svg>
     <div>
@@ -45,7 +65,7 @@
   </div>
 </header>
 
-<main>
+<main id="main">
 
   <div class="card">
     <h2>Nuevo Reporte</h2>
@@ -131,6 +151,11 @@
 </main>
 
 <script>
+  function iniciarApp(){
+    document.getElementById('splash').classList.add('hidden');
+    document.getElementById('header').classList.remove('hidden');
+    document.getElementById('main').classList.add('active');
+  }
   function toggleInfra(){
     const t = document.getElementById('tipo').value;
     document.getElementById('infra').classList.toggle('hidden', t !== 'Daño en infraestructura');
