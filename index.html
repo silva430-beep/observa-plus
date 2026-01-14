@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OBSERVA+</title>
-  <meta name="theme-color" content="#1f6f5c">
+  <title>Seguridad TQ</title>  <meta name="theme-color" content="#1f6f5c">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png" type="image/png">
   <style>
@@ -68,12 +67,14 @@
 </head>
 <body>
   <div class="container">
-    <h1>OBSERVA+</h1>
+    <h1>Seguridad TQ</h1>
     <p>App progresiva para monitoreo y observacion en tiempo real</p>
     <p>Instalada desde GitHub Pages</p>
     
-    <button class="button" onclick="alert('Bienvenido a OBSERVA+!')">
+    <button class="button" onclick="mostrarInfo()">
       Comenzar
+    </button>      60
+      
     </button>
     
     <div class="info">
@@ -93,6 +94,10 @@
             console.error('Error:', err);
           });
       });
+          
+    function mostrarInfo() {
+      alert('Bienvenido a Seguridad TQ!\n\nFunciones:\n- Monitoreo en tiempo real\n- Caché offline\n- Instalable como app\n\nPara instalar: Menú (⋮) > Instalar app');
+    }
     }
   </script>
 </body>
