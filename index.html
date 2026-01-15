@@ -5,7 +5,244 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OBSERVA+ | Observación Preventiva</title>
    <link rel="manifest" href="manifest.json">
-   <meta name="theme-color" content="#1f6f5c">
+   <meta name="theme-color" content="#1f6f5c"><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBSERVA+ | Observación Preventiva</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1f6f5c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; color: #1f2937; }
+        .splash { background: linear-gradient(135deg, #0b3c5d, #1f6f5c); color: white; padding: 40px 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .splash h1 { font-size: 3em; margin: 20px 0; }
+        .splash p { font-size: 1.1em; margin: 10px 0 30px; opacity: 0.9; }
+        .splash button { background: white; color: #1f6f5c; font-weight: 700; padding: 14px 28px; border: none; border-radius: 50px; cursor: pointer; font-size: 1.1em; margin-top: 20px; }
+        .splash button:hover { filter: brightness(0.9); }
+        header { background: linear-gradient(135deg, #0b3c5d, #1f6f5c); color: white; padding: 18px; text-align: center; display: none; }
+        header.visible { display: block; }
+        main { padding: 20px; max-width: 980px; margin: auto; display: none; }
+        main.visible { display: block; }
+        .card { background: white; border-radius: 14px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { margin: 0 0 20px 0; color: #1f6f5c; }
+        label { display: block; margin: 15px 0 5px 0; font-weight: 600; color: #333; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0 10px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 14px; }
+        textarea { resize: vertical; min-height: 80px; }
+        button { background: linear-gradient(135deg, #1f6f5c, #f2a365); color: white; font-weight: 700; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; margin: 10px 5px 10px 0; }
+        button:hover { filter: brightness(0.95); }
+        #preview-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
+        .preview-item { position: relative; border-radius: 8px; overflow: hidden; background: #e0e0e0; height: 120px; }
+        .preview-item img, .preview-item video { width: 100%; height: 100%; object-fit: cover; }
+        .remove-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.9); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        #cameraModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; display: none; z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+        #cameraModal.visible { display: flex; }
+        #videoStream { max-width: 100%; max-height: 70vh; }
+        .camera-buttons { margin-top: 20px; display: flex; gap: 10px; }
+        footer { text-align: center; font-size: 12px; color: #999; margin: 20px 0; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="splash" id="splash">
+        <h1>OBSERVA+</h1>
+        <p>Observación y Prevención Operativa</p>
+        <button onclick="iniciarApp()">Comenzar →</button>
+    </div>
+
+    <header id="header">
+        <h1>OBSERVA+</h1>
+        <p>Observación y Prevención Operativa</p>
+    </header>
+
+    <main id="main">
+        <div class="card">
+            <h2>Nuevo Reporte</h2>
+            
+            <label>Fecha</label>
+            <input type="date" id="fecha" required>
+            
+            <label>Edificio</label>
+            <select id="edificio" required>
+                <option value="">Seleccione...</option>
+                <option>Edificio 1</option>
+                <option>Edificio 2</option>
+                <option>Edificio 3</option>
+                <option>Edificio 4</option>
+            </select>
+            
+            <label>Lugar específico</label>
+            <input type="text" id="lugar" placeholder="Ej: Pasillo técnico, laboratorio" required>
+            
+            <label>Tipo de novedad</label>
+            <select id="tipo" required>
+                <option value="">Seleccione...</option>
+                <option>Conducta insegura</option>
+                <option>Desviación de procedimiento</option>
+                <option>Riesgo humano / fatiga</option>
+                <option>Riesgo operativo</option>
+                <option>Anomalía de rutina</option>
+                <option>Daño en infraestructura</option>
+            </select>
+            
+            <label>Descripción</label>
+            <textarea id="descripcion" placeholder="Describa de forma objetiva lo observado" required></textarea>
+            
+            <label>Nivel de riesgo</label>
+            <select id="riesgo" required>
+                <option value="">Seleccione...</option>
+                <option>Bajo</option>
+                <option>Medio</option>
+                <option>Alto</option>
+            </select>
+            
+            <label>Adjuntar fotos/videos</label>
+            <input type="file" id="fotos" accept="image/*,video/*" multiple onchange="previewFotos(event)">
+            <div id="preview-container"></div>
+            
+            <button onclick="abrirCamara()">Capturar Foto</button>
+            
+            <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <button onclick="enviarPorCorreo()" style="background: #4CAF50;">Enviar por Correo</button>
+                <button onclick="enviarWhatsApp()" style="background: #25D366;">Compartir por WhatsApp</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="cameraModal">
+        <video id="videoStream" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div class="camera-buttons">
+            <button onclick="capturarFoto()">Capturar</button>
+            <button onclick="cerrarCamara()" style="background: #999;">Cerrar</button>
+        </div>
+    </div>
+
+    <footer>OBSERVA+ · Uso preventivo · No implica sanción automática</footer>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(e => console.log('SW no registrado'));
+        }
+
+        let fotosSeleccionadas = [];
+        let streamCamara = null;
+
+        function iniciarApp() {
+            document.getElementById('splash').classList.add('hidden');
+            document.getElementById('header').classList.add('visible');
+            document.getElementById('main').classList.add('visible');
+        }
+
+        function previewFotos(event) {
+            const files = Array.from(event.target.files);
+            fotosSeleccionadas = files;
+            mostrarPreview();
+        }
+
+        function mostrarPreview() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+            
+            fotosSeleccionadas.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const tipo = file.type.startsWith('image') ? 'image' : 'video';
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = tipo === 'image' 
+                        ? `<img src="${e.target.result}" alt="Foto">` 
+                        : `<video src="${e.target.result}" controls></video>`;
+                    div.innerHTML += `<button class="remove-btn" onclick="eliminarFoto(${index})">×</button>`;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function eliminarFoto(index) {
+            fotosSeleccionadas.splice(index, 1);
+            document.getElementById('fotos').value = '';
+            mostrarPreview();
+        }
+
+        function abrirCamara() {
+            document.getElementById('cameraModal').classList.add('visible');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+                .then(stream => {
+                    streamCamara = stream;
+                    document.getElementById('videoStream').srcObject = stream;
+                })
+                .catch(e => alert('Error: ' + e.message));
+        }
+
+        function capturarFoto() {
+            const canvas = document.getElementById('canvas');
+            const video = document.getElementById('videoStream');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const file = new File([blob], 'foto_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                fotosSeleccionadas.push(file);
+                mostrarPreview();
+                alert('Foto capturada');
+                cerrarCamara();
+            });
+        }
+
+        function cerrarCamara() {
+            document.getElementById('cameraModal').classList.remove('visible');
+            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+        }
+
+        function validarFormulario() {
+            const fecha = document.getElementById('fecha').value;
+            const edificio = document.getElementById('edificio').value;
+            const lugar = document.getElementById('lugar').value;
+            const tipo = document.getElementById('tipo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            
+            if (!fecha || !edificio || !lugar || !tipo || !descripcion) {
+                alert('Por favor complete todos los campos obligatorios');
+                return false;
+            }
+            return true;
+        }
+
+        function enviarPorCorreo() {
+            if (!validarFormulario()) return;
+            
+            const fecha = document.getElementById('fecha').value;
+            const edificio = document.getElementById('edificio').value;
+            const lugar = document.getElementById('lugar').value;
+            const tipo = document.getElementById('tipo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const riesgo = document.getElementById('riesgo').value;
+            
+            const body = `Reporte OBSERVA+%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ALugar: ${lugar}%0ATipo: ${tipo}%0ARiesgo: ${riesgo}%0A%0ADescripción:%0A${descripcion}%0A%0ANota: Adjunte fotos/videos manualmente`;
+            window.location.href = `mailto:paetq@tqgrupo.com?subject=Reporte%20OBSERVA+&body=${body}`;
+        }
+
+        function enviarWhatsApp() {
+            if (!validarFormulario()) return;
+            
+            const fecha = document.getElementById('fecha').value;
+            const edificio = document.getElementById('edificio').value;
+            const tipo = document.getElementById('tipo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            
+            const mensaje = `*REPORTE OBSERVA+*%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ATipo: ${tipo}%0ADescripción: ${descripcion}%0A%0AEnviado desde OBSERVA+`;
+            window.open(`https://wa.me/?text=${mensaje}`, '_blank');
+        }
+    </script>
+</body>
+</html>
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
    <link rel="icon" type="image/png" href="icon-192.png">
