@@ -59,6 +59,9 @@
         <div class="card">
             <h2>Nuevo Reporte</h2>
             <form id="reportForm" onsubmit="return validarFormulario()">
+                <label for="fecha">Fecha y hora *</label>
+                <input type="datetime-local" id="fecha" required>
+
                 <label for="edificio">Edificio *</label>
                 <select id="edificio" required>
                     <option value="">Seleccione...</option>
@@ -143,6 +146,7 @@
 
         function validarFormulario(event) {
             if (event) event.preventDefault();
+            const fecha = document.getElementById('fecha').value;
             const edificio = document.getElementById('edificio').value;
             const lugar = document.getElementById('lugar').value;
             const tipo = document.getElementById('tipo').value;
@@ -150,7 +154,7 @@
             const riesgo = document.getElementById('riesgo').value;
             const correo = document.getElementById('correo').value;
 
-            if (!edificio || !lugar || !tipo || !descripcion || !riesgo || !correo) {
+            if (!fecha || !edificio || !lugar || !tipo || !descripcion || !riesgo || !correo) {
                 alert('Por favor, complete todos los campos obligatorios.');
                 return false;
             }
@@ -271,29 +275,31 @@
 
         function enviarCorreo() {
             if (!validarFormulario()) return;
+            const fecha = document.getElementById('fecha').value;
+            const fechaFormateada = new Date(fecha).toLocaleString('es-CO');
             const edificio = document.getElementById('edificio').value;
             const lugar = document.getElementById('lugar').value;
             const tipo = document.getElementById('tipo').value;
             const descripcion = document.getElementById('descripcion').value;
             const riesgo = document.getElementById('riesgo').value;
             const destinatario = document.getElementById('correo').value;
-            const fecha = new Date().toLocaleString('es-CO');
             
-            const texto = `REPORTE OBSERVA+\n\nFecha: ${fecha}\nEdificio: ${edificio}\nLugar: ${lugar}\nTipo: ${tipo}\nRiesgo: ${riesgo}\nDescripción: ${descripcion}\n\nEvidencias adjuntas: ${archivos.length} archivo(s)`;
+            const texto = `REPORTE OBSERVA+\n\nFecha: ${fechaFormateada}\nEdificio: ${edificio}\nLugar: ${lugar}\nTipo: ${tipo}\nRiesgo: ${riesgo}\nDescripción: ${descripcion}\n\nEvidencias adjuntas: ${archivos.length} archivo(s)`;
             const body = encodeURIComponent(texto);
             window.location.href = `mailto:${destinatario}?subject=Reporte%20OBSERVA%2B&body=${body}`;
         }
 
         function enviarWhatsApp() {
             if (!validarFormulario()) return;
+            const fecha = document.getElementById('fecha').value;
+            const fechaFormateada = new Date(fecha).toLocaleString('es-CO');
             const edificio = document.getElementById('edificio').value;
             const lugar = document.getElementById('lugar').value;
             const tipo = document.getElementById('tipo').value;
             const descripcion = document.getElementById('descripcion').value;
             const riesgo = document.getElementById('riesgo').value;
-            const fecha = new Date().toLocaleString('es-CO');
             
-            let mensaje = `*REPORTE OBSERVA+*\n\n*Fecha:* ${fecha}\n*Edificio:* ${edificio}\n*Lugar:* ${lugar}\n*Tipo:* ${tipo}\n*Riesgo:* ${riesgo}\n*Descripción:* ${descripcion}`;
+            let mensaje = `*REPORTE OBSERVA+*\n\n*Fecha:* ${fechaFormateada}\n*Edificio:* ${edificio}\n*Lugar:* ${lugar}\n*Tipo:* ${tipo}\n*Riesgo:* ${riesgo}\n*Descripción:* ${descripcion}`;
             
             if (archivos.length > 0) {
                 mensaje += `\n\n*Evidencias adjuntas:* ${archivos.length} archivo(s)`;
