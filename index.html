@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OBSERVA+ | Observación Preventiva</title>
-   <link rel="manifest" href="manifest.json">
-   <meta name="theme-color" content="#1f6f5c"><!DOCTYPE html>
-<html lang="es">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OBSERVA+ | Observación Preventiva</title>
@@ -18,7 +11,7 @@
     <link rel="icon" type="image/png" href="icon-192.png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; color: #1f2937; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; color: #333; }
         .splash { background: linear-gradient(135deg, #0b3c5d, #1f6f5c); color: white; padding: 40px 20px; text-align: center; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .splash h1 { font-size: 3em; margin: 20px 0; }
         .splash p { font-size: 1.1em; margin: 10px 0 30px; opacity: 0.9; }
@@ -114,7 +107,7 @@
     </main>
 
     <div id="cameraModal">
-        <video id="videoStream" autoplay></video>
+        <video id="videoStream" autoplay playsinline></video>
         <canvas id="canvas" style="display:none;"></canvas>
         <div class="camera-buttons">
             <button onclick="capturarFoto()">Capturar</button>
@@ -126,7 +119,7 @@
 
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(e => console.log('SW no registrado'));
+            navigator.serviceWorker.register('sw.js').catch(e => console.log('SW: ' + e.message));
         }
 
         let fotosSeleccionadas = [];
@@ -154,9 +147,11 @@
                     const tipo = file.type.startsWith('image') ? 'image' : 'video';
                     const div = document.createElement('div');
                     div.className = 'preview-item';
-                    div.innerHTML = tipo === 'image' 
-                        ? `<img src="${e.target.result}" alt="Foto">` 
-                        : `<video src="${e.target.result}" controls></video>`;
+                    if (tipo === 'image') {
+                        div.innerHTML = `<img src="${e.target.result}" alt="Foto">`;
+                    } else {
+                        div.innerHTML = `<video src="${e.target.result}" controls></video>`;
+                    }
                     div.innerHTML += `<button class="remove-btn" onclick="eliminarFoto(${index})">×</button>`;
                     container.appendChild(div);
                 };
@@ -177,28 +172,37 @@
                     streamCamara = stream;
                     document.getElementById('videoStream').srcObject = stream;
                 })
-                .catch(e => alert('Error: ' + e.message));
+                .catch(e => alert('Error de cámara: ' + e.message));
         }
 
         function capturarFoto() {
             const canvas = document.getElementById('canvas');
             const video = document.getElementById('videoStream');
+            if (!video.videoWidth) {
+                alert('Por favor espera a que la cámara cargue');
+                return;
+            }
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             
             canvas.toBlob(blob => {
-                const file = new File([blob], 'foto_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-                fotosSeleccionadas.push(file);
-                mostrarPreview();
-                alert('Foto capturada');
-                cerrarCamara();
-            });
+                if (blob) {
+                    const file = new File([blob], 'foto_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                    fotosSeleccionadas.push(file);
+                    mostrarPreview();
+                    alert('Foto capturada');
+                    cerrarCamara();
+                }
+            }, 'image/jpeg');
         }
 
         function cerrarCamara() {
             document.getElementById('cameraModal').classList.remove('visible');
-            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+            if (streamCamara) {
+                streamCamara.getTracks().forEach(t => t.stop());
+                streamCamara = null;
+            }
         }
 
         function validarFormulario() {
@@ -225,7 +229,8 @@
             const descripcion = document.getElementById('descripcion').value;
             const riesgo = document.getElementById('riesgo').value;
             
-            const body = `Reporte OBSERVA+%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ALugar: ${lugar}%0ATipo: ${tipo}%0ARiesgo: ${riesgo}%0A%0ADescripción:%0A${descripcion}%0A%0ANota: Adjunte fotos/videos manualmente`;
+            const texto = `Reporte OBSERVA+\n\nFecha: ${fecha}\nEdificio: ${edificio}\nLugar: ${lugar}\nTipo: ${tipo}\nRiesgo: ${riesgo}\n\nDescripción:\n${descripcion}\n\nAdjunte fotos manualmente al responder este correo.`;
+            const body = encodeURIComponent(texto);
             window.location.href = `mailto:paetq@tqgrupo.com?subject=Reporte%20OBSERVA+&body=${body}`;
         }
 
@@ -237,321 +242,10 @@
             const tipo = document.getElementById('tipo').value;
             const descripcion = document.getElementById('descripcion').value;
             
-            const mensaje = `*REPORTE OBSERVA+*%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ATipo: ${tipo}%0ADescripción: ${descripcion}%0A%0AEnviado desde OBSERVA+`;
+            const texto = `*REPORTE OBSERVA+*\n\nFecha: ${fecha}\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripción: ${descripcion}\n\nEnviado desde OBSERVA+`;
+            const mensaje = encodeURIComponent(texto);
             window.open(`https://wa.me/?text=${mensaje}`, '_blank');
         }
     </script>
-</body>
-</html>
-   <meta name="apple-mobile-web-app-capable" content="yes">
-   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-   <link rel="icon" type="image/png" href="icon-192.png">
-  
-  
-  <style>
-    :root{
-      --bg:#f6f8fb; --card:#ffffff; --primary:#1f6f5c; --secondary:#f2a365; --accent:#0b3c5d; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --text:#1f2937;
-    }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:var(--bg); margin:0; color:var(--text); }
-    .splash { background:linear-gradient(135deg,var(--accent),var(--primary)); color:white; padding:40px 20px; text-align:center; min-height:80vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-    .splash h1{margin:0; font-size:3em; display:flex; align-items:center; justify-content:center; gap:15px;}
-    .splash .shield{width:50px; height:50px}
-    .splash p{margin:10px 0 30px; opacity:0.9; font-size:1.1em}
-    .splash .card-info { background:rgba(255,255,255,0.15); border-radius:15px; padding:25px; max-width:500px; margin:20px 0; backdrop-filter:blur(10px); }
-    .splash button { background:white; color:var(--primary); font-weight:700; padding:14px 28px; border:none; border-radius:50px; cursor:pointer; font-size:1.1em; margin-top:20px; }
-    .splash button:hover { filter:brightness(0.9); }
-    header { background:linear-gradient(135deg,var(--accent),var(--primary)); color:white; padding:18px; text-align:center; }
-    header .brand{display:flex; align-items:center; justify-content:center; gap:10px}
-    header .shield{width:34px; height:34px}
-    main { padding:20px; max-width:980px; margin:auto; display:none; }
-    main.active { display:block; }
-    .card { background:var(--card); border-radius:14px; padding:18px; margin-bottom:16px; box-shadow:0 10px 20px rgba(0,0,0,0.08); }
-    h2{margin-top:0}
-    label { display:block; margin-top:12px; font-weight:600; }
-    input, select, textarea, button {
-      width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid #d1d5db; font-size:14px; box-sizing:border-box;
-    }
-    select[multiple]{height:110px}
-    button { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:white; font-weight:700; cursor:pointer; border:none; }
-    button.secondary{background:#eef2f7; color:#111827}
-    button:hover { filter:brightness(0.95); }
-    .note { font-size:12px; color:#6b7280; margin-top:6px; }
-    .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-    .badge{display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700}
-    .badge.ok{background:#eafaf1; color:#166534}
-    .badge.warn{background:#fff7ed; color:#9a3412}
-    .badge.bad{background:#fee2e2; color:#7f1d1d}
-    footer { text-align:center; font-size:12px; color:#6b7280; margin:28px 0; }
-    .hidden{display:none}
-    #preview-container { margin-top:15px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
-    .preview-item { position:relative; border-radius:10px; overflow:hidden; background:#f0f0f0; }
-    .preview-item img, .preview-item video { width:100%; height:150px; object-fit:cover; }
-    .preview-item .remove-btn { position:absolute; top:5px; right:5px; background:rgba(255,0,0,0.8); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; }
-    .preview-item .remove-btn:hover { background:rgba(255,0,0,1); }
-    #cameraContainer { position:fixed; top:0; left:0; right:0; bottom:0; background:black; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1000; }
-    #videoStream { max-width:100%; max-height:80vh; border-radius:10px; }
-    .camera-controls { display:flex; gap:10px; margin-top:20px; }
-    .camera-controls button { width:auto; padding:15px 25px; }
-  </style>
-</head>
-<body>
-  <div class="splash" id="splash">
-    <svg class="shield" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2L20 6V11C20 16.25 16.5 20.74 12 22C7.5 20.74 4 16.25 4 11V6L12 2Z" fill="#ffffff" opacity="0.95"/>
-    </svg>
-    <h1>OBSERVA+</h1>
-    <p>Observación y Prevención Operativa</p>
-    <div class="card-info">
-      <p style="margin-top:0">App progresiva para monitoreo y observación en tiempo real</p>
-      <p>Instalada desde GitHub Pages</p>
-      <p style="font-size:0.9em; opacity:0.9">Es una PWA (Progressive Web App) que puedes instalar como app en tu dispositivo y usar sin conexión a internet.</p>
-    </div>
-    <button onclick="iniciarApp()">Comenzar →</button>
-  </div>
-
-  <header id="header" class="hidden">
-    <div class="brand">
-      <svg class="shield" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L20 6V11C20 16.25 16.5 20.74 12 22C7.5 20.74 4 16.25 4 11V6L12 2Z" fill="#ffffff" opacity="0.95"/>
-      </svg>
-      <div>
-        <h1 style="margin:0">OBSERVA+</h1>
-        <p style="margin:0;opacity:.9">Observación y Prevención Operativa</p>
-      </div>
-    </div>
-  </header>
-
-  <main id="main">
-    <div class="card">
-      <h2>Nuevo Reporte</h2>
-      
-      <!-- PRIMERO: FECHA -->
-      <label>Fecha (dd-mm-aaaa)</label>
-      <input type="date" id="fecha" required />
-      
-      <!-- SEGUNDO: EDIFICIO -->
-      <label>Edificio</label>
-      <select id="edificio">
-        <option>Seleccione…</option>
-        <option>Edificio 1</option>
-        <option>Edificio 2</option>
-        <option>Edificio 3</option>
-        <option>Edificio 4</option>
-      </select>
-      
-      <!-- TERCERO: LUGAR ESPECÍFICO -->
-      <label>Lugar específ ico</label>
-      <input type="text" id="lugar" placeholder="Ej: Pasillo técnico, laboratorio, acceso" />
-      
-      <!-- RESTO DE CAMPOS -->
-      <label>Tipo de novedad</label>
-      <select id="tipo" onchange="toggleInfra()">
-        <option>Seleccione…</option>
-        <option>Conducta insegura</option>
-        <option>Desviación de procedimiento</option>
-        <option>Riesgo humano / fatiga</option>
-        <option>Riesgo operativo</option>
-        <option>Anomalía de rutina</option>
-        <option>Daño en infraestructura</option>
-      </select>
-      
-      <div id="infra" class="hidden">
-        <label>Tipo de daño en infraestructura</label>
-        <select id="tipoInfra">
-          <option>Iluminación / eléctrico</option>
-          <option>Puertas / accesos</option>
-          <option>Pisos / baldosas</option>
-          <option>Humedad / filtración</option>
-          <option>Señalización</option>
-          <option>Otro</option>
-        </select>
-      </div>
-      
-      <label>Descripción de la novedad</label>
-      <textarea id="descripcion" rows="4" placeholder="Describa de forma objetiva lo observado"></textarea>
-      
-      <label>Motivo del reporte</label>
-      <select id="motivo" multiple>
-        <option>Fuera de horario</option>
-        <option>Fuera de procedimiento</option>
-        <option>Permanencia inusual</option>
-        <option>Zona crítica</option>
-        <option>Evento repetido</option>
-        <option>Condición insegura de infraestructura</option>
-      </select>
-      
-      <label>Nivel de riesgo</label>
-      <select id="riesgo">
-        <option>🟢 Bajo</option>
-        <option>🟡 Medio</option>
-        <option>🔴 Alto</option>
-      </select>
-      
-      <label>Enviar al PAE (RRHH)</label>
-      <select id="enviarPAE">
-        <option>Sí (paetq@tqgrupo.com)</option>
-        <option>No</option>
-      </select>
-      
-      <label>📷 Adjuntar múltiples fotos/videos</label>
-      <input type="file" id="evidencias" accept="image/*,video/*" multiple onchange="previewFiles(event)" />
-      <p class="note">⚠️ Puede adjuntar varias fotos y/o videos. Evite adjuntar imágenes con rostros si no es necesario.</p>
-      
-      <div id="preview-container"></div>
-      
-      <button onclick="abrirCamara()">📷 Capturar Foto/Video</button>
-      
-      <div id="cameraContainer" class="hidden">
-        <video id="videoStream" autoplay playsinline></video>
-        <div class="camera-controls">
-          <button onclick="capturarFoto()">📸 Capturar Foto</button>
-          <button class="secondary" onclick="cerrarCamara()">✕ Cerrar</button>
-        </div>
-      </div>
-      <canvas id="canvas" class="hidden"></canvas>
-      
-      <button onclick="enviarReporte()">✉️ Enviar Reporte</button>
-      <button onclick="sendMailWithAttachment()" class="secondary">📝 Enviar por Correo</button>
-      <button onclick="compartirWhatsApp()" class="secondary">📱 Compartir por WhatsApp</button>
-    </div>
-  </main>
-
-  <footer>
-    OBSERVA+ · Uso preventivo · No implica sanción automática
-  </footer>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-
-    let archivosSeleccionados = [];
-
-    function iniciarApp(){
-      document.getElementById('splash').classList.add('hidden');
-      document.getElementById('header').classList.remove('hidden');
-      document.getElementById('main').classList.add('active');
-    }
-
-    function toggleInfra(){
-      const t = document.getElementById('tipo').value;
-      document.getElementById('infra').classList.toggle('hidden', t !== 'Daño en infraestructura');
-    }
-
-    function previewFiles(event) {
-      const files = Array.from(event.target.files);
-      archivosSeleccionados = files;
-      renderizarPrevisualizacion();
-    }
-
-    function renderizarPrevisualizacion() {
-      const preview = document.getElementById('preview-container');
-      preview.innerHTML = '';
-      
-      archivosSeleccionados.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const div = document.createElement('div');
-          div.className = 'preview-item';
-          
-          const tipo = file.type.startsWith('image') ? 'image' : 'video';
-          let html = '';
-          
-          if (tipo === 'image') {
-            html = `<img src="${e.target.result}" alt="Foto" />`;
-          } else {
-            html = `<video controls><source src="${e.target.result}" type="${file.type}">Tu navegador no soporta video</video>`;
-          }
-          
-          html += `<button class="remove-btn" onclick="removerArchivo(${index})">×</button>`;
-          div.innerHTML = html;
-          preview.appendChild(div);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function removerArchivo(index) {
-      archivosSeleccionados.splice(index, 1);
-      const input = document.getElementById('evidencias');
-      const dt = new DataTransfer();
-      archivosSeleccionados.forEach(file => dt.items.add(file));
-      input.files = dt.files;
-      renderizarPrevisualizacion();
-    }
-
-    let stream = null;
-
-    function abrirCamara(){
-      const cameraContainer = document.getElementById('cameraContainer');
-      const video = document.getElementById('videoStream');
-      cameraContainer.classList.remove('hidden');
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-        .then(s => { stream = s; video.srcObject = s; video.play(); })
-        .catch(e => alert('No se pudo acceder a la cámara: ' + e.message));
-    }
-
-    function capturarFoto(){
-      const canvas = document.getElementById('canvas');
-      const video = document.getElementById('videoStream');
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      
-      canvas.toBlob(blob => {
-        const file = new File([blob], 'captura_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-        archivosSeleccionados.push(file);
-        renderizarPrevisualizacion();
-        alert('Foto capturada y agregada!');
-        cerrarCamara();
-      });
-    }
-
-    function cerrarCamara(){
-      if(stream) stream.getTracks().forEach(t => t.stop());
-      document.getElementById('cameraContainer').classList.add('hidden');
-    }
-
-    function enviarReporte(){
-      const fecha = document.getElementById('fecha').value;
-      const edificio = document.getElementById('edificio').value;
-      const lugar = document.getElementById('lugar').value;
-      const tipo = document.getElementById('tipo').value;
-      const descripcion = document.getElementById('descripcion').value;
-      
-      if(!fecha || edificio === 'Seleccione…' || !lugar || tipo === 'Seleccione…' || !descripcion) {
-        alert('Por favor complete todos los campos obligatorios');
-        return;
-      }
-      
-      alert('Reporte preparado para enviar. Ahora selecciona compartir por WhatsApp o Correo.');
-    }
-
-    function sendMailWithAttachment(){
-      const fecha = document.getElementById('fecha').value;
-      const edificio = document.getElementById('edificio').value;
-      const lugar = document.getElementById('lugar').value;
-      const tipo = document.getElementById('tipo').value;
-      const descripcion = document.getElementById('descripcion').value;
-      const riesgo = document.getElementById('riesgo').value;
-      
-      const body = `Reporte Preventivo OBSERVA+%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ALugar: ${lugar}%0ATipo: ${tipo}%0ARiesgo: ${riesgo}%0A%0ADescripci%C3%B3n:%0A${descripcion}%0A%0ANota: Las im%C3%A1genes/videos deben adjuntarse manualmente al correo.`;
-      
-      window.location.href = `mailto:paetq@tqgrupo.com?subject=Reporte%20Preventivo%20OBSERVA%2B&body=${body}`;
-    }
-
-    function compartirWhatsApp(){
-      const edificio = document.getElementById('edificio').value;
-      const tipo = document.getElementById('tipo').value;
-      const descripcion = document.getElementById('descripcion').value;
-      const fecha = document.getElementById('fecha').value;
-      
-      const mensaje = `*REPORTE OBSERVA+*%0A%0AFecha: ${fecha}%0AEdificio: ${edificio}%0ATipo: ${tipo}%0ADescripci%C3%B3n: ${descripcion}%0A%0AEnviado desde OBSERVA+ - Observaci%C3%B3n y Prevenci%C3%B3n Operativa`;
-      
-      const enlace = `https://wa.me/?text=${mensaje}`;
-      window.open(enlace, '_blank');
-    }
-  </script>
 </body>
 </html>
