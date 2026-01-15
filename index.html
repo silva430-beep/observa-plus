@@ -31,220 +31,239 @@
         #preview-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
         .preview-item { position: relative; border-radius: 8px; overflow: hidden; background: #e0e0e0; height: 120px; }
         .preview-item img, .preview-item video { width: 100%; height: 100%; object-fit: cover; }
-        .remove-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.9); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
+        .remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(255,0,0,0.9); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; padding: 0; cursor: pointer; font-weight: bold; font-size: 12px; line-height: 18px; text-align: center; }
         #cameraModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: black; display: none; z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
         #cameraModal.visible { display: flex; }
-        #videoStream { max-width: 100%; max-height: 70vh; }
-        .camera-buttons { margin-top: 20px; display: flex; gap: 10px; }
-        footer { text-align: center; font-size: 12px; color: #999; margin: 20px 0; }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="splash" id="splash">
         <h1>OBSERVA+</h1>
-        <p>Observación y Prevención Operativa</p>
-        <button onclick="iniciarApp()">Comenzar →</button>
+        <p>Sistema de Observación Preventiva</p>
+        <button onclick="comenzar()">Comenzar</button>
     </div>
 
     <header id="header">
-        <h1>OBSERVA+</h1>
-        <p>Observación y Prevención Operativa</p>
+        <h1>OBSERVA+ - Reporte</h1>
     </header>
 
     <main id="main">
         <div class="card">
-            <h2>Nuevo Reporte</h2>
-            
-            <label>Fecha</label>
-            <input type="date" id="fecha" required>
-            
-            <label>Edificio</label>
-            <select id="edificio" required>
-                <option value="">Seleccione...</option>
-                <option>Edificio 1</option>
-                <option>Edificio 2</option>
-                <option>Edificio 3</option>
-                <option>Edificio 4</option>
-            </select>
-            
-            <label>Lugar específico</label>
-            <input type="text" id="lugar" placeholder="Ej: Pasillo técnico, laboratorio" required>
-            
-            <label>Tipo de novedad</label>
-            <select id="tipo" required>
-                <option value="">Seleccione...</option>
-                <option>Conducta insegura</option>
-                <option>Desviación de procedimiento</option>
-                <option>Riesgo humano / fatiga</option>
-                <option>Riesgo operativo</option>
-                <option>Anomalía de rutina</option>
-                <option>Daño en infraestructura</option>
-            </select>
-            
-            <label>Descripción</label>
-            <textarea id="descripcion" placeholder="Describa de forma objetiva lo observado" required></textarea>
-            
-            <label>Nivel de riesgo</label>
-            <select id="riesgo" required>
-                <option value="">Seleccione...</option>
-                <option>Bajo</option>
-                <option>Medio</option>
-                <option>Alto</option>
-            </select>
-            
-            <label>Adjuntar fotos/videos</label>
-            <input type="file" id="fotos" accept="image/*,video/*" multiple onchange="previewFotos(event)">
-            <div id="preview-container"></div>
-            
-            <button onclick="abrirCamara()">Capturar Foto</button>
-            
-            <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
-                <button onclick="enviarPorCorreo()" style="background: #4CAF50;">Enviar por Correo</button>
-                <button onclick="enviarWhatsApp()" style="background: #25D366;">Compartir por WhatsApp</button>
-            </div>
+            <h2>Diligencie el Formulario</h2>
+            <form id="reportForm" onsubmit="return validarFormulario()">
+                <label for="edificio">Edificio *</label>
+                <select id="edificio" required>
+                    <option value="">Seleccione...</option>
+                    <option>Edificio A</option>
+                    <option>Edificio B</option>
+                    <option>Edificio C</option>
+                </select>
+
+                <label for="lugar">Lugar específ ico *</label>
+                <input type="text" id="lugar" placeholder="Ej. Pasillo técnico, laboratorio" required>
+
+                <label for="tipo">Tipo de novedad *</label>
+                <select id="tipo" required>
+                    <option value="">Seleccione...</option>
+                    <option>Acoso</option>
+                    <option>Hurto</option>
+                    <option>Vandal ismo</option>
+                    <option>Otro</option>
+                </select>
+
+                <label for="descripcion">Descripción *</label>
+                <textarea id="descripcion" placeholder="Describa de forma objetiva lo observado" required></textarea>
+
+                <label for="riesgo">Nivel de riesgo *</label>
+                <select id="riesgo" required>
+                    <option value="">Seleccione...</option>
+                    <option>Bajo</option>
+                    <option>Medio</option>
+                    <option>Alto</option>
+                </select>
+
+                <label>Adjuntar fotos/videos</label>
+                <input type="file" id="fileInput" accept="image/*,video/*" multiple onchange="agregarArchivo(event)">
+                <button type="button" onclick="abrirCamara()">Capturar Foto</button>
+                <button type="button" onclick="abrirGrabadora()">Grabar Video</button>
+
+                <div id="preview-container"></div>
+
+                <button type="button" onclick="cerrarFormulario()">Cerrar</button>
+                <button type="submit">Enviar Formulario</button>
+            </form>
         </div>
     </main>
 
     <div id="cameraModal">
-        <video id="videoStream" autoplay playsinline></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <div class="camera-buttons">
-            <button onclick="capturarFoto()">Capturar</button>
+        <video id="video" style="width: 100%; max-width: 500px; margin: 10px;"></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <div style="margin: 10px;">
+            <button onclick="tomarFoto()">Capturar</button>
             <button onclick="cerrarCamara()" style="background: #999;">Cerrar</button>
         </div>
     </div>
 
-    <footer>OBSERVA+ · Uso preventivo · No implica sanción automática</footer>
-
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(e => console.log('SW: ' + e.message));
-        }
+        let stream = null;
+        let archivos = [];
+        let modoVideo = false;
 
-        let fotosSeleccionadas = [];
-        let streamCamara = null;
-
-        function iniciarApp() {
-            document.getElementById('splash').classList.add('hidden');
+        function comenzar() {
+            document.getElementById('splash').style.display = 'none';
             document.getElementById('header').classList.add('visible');
             document.getElementById('main').classList.add('visible');
         }
 
-        function previewFotos(event) {
-            const files = Array.from(event.target.files);
-            fotosSeleccionadas = files;
-            mostrarPreview();
-        }
-
-        function mostrarPreview() {
-            const container = document.getElementById('preview-container');
-            container.innerHTML = '';
-            
-            fotosSeleccionadas.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const tipo = file.type.startsWith('image') ? 'image' : 'video';
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    if (tipo === 'image') {
-                        div.innerHTML = `<img src="${e.target.result}" alt="Foto">`;
-                    } else {
-                        div.innerHTML = `<video src="${e.target.result}" controls></video>`;
-                    }
-                    div.innerHTML += `<button class="remove-btn" onclick="eliminarFoto(${index})">×</button>`;
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function eliminarFoto(index) {
-            fotosSeleccionadas.splice(index, 1);
-            document.getElementById('fotos').value = '';
-            mostrarPreview();
-        }
-
-        function abrirCamara() {
-            document.getElementById('cameraModal').classList.add('visible');
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-                .then(stream => {
-                    streamCamara = stream;
-                    document.getElementById('videoStream').srcObject = stream;
-                })
-                .catch(e => alert('Error de cámara: ' + e.message));
-        }
-
-        function capturarFoto() {
-            const canvas = document.getElementById('canvas');
-            const video = document.getElementById('videoStream');
-            if (!video.videoWidth) {
-                alert('Por favor espera a que la cámara cargue');
-                return;
-            }
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            canvas.toBlob(blob => {
-                if (blob) {
-                    const file = new File([blob], 'foto_' + Date.now() + '.jpg', { type: 'image/jpeg' });
-                    fotosSeleccionadas.push(file);
-                    mostrarPreview();
-                    alert('Foto capturada');
-                    cerrarCamara();
-                }
-            }, 'image/jpeg');
-        }
-
-        function cerrarCamara() {
-            document.getElementById('cameraModal').classList.remove('visible');
-            if (streamCamara) {
-                streamCamara.getTracks().forEach(t => t.stop());
-                streamCamara = null;
-            }
+        function cerrarFormulario() {
+            document.getElementById('splash').style.display = 'flex';
+            document.getElementById('header').classList.remove('visible');
+            document.getElementById('main').classList.remove('visible');
+            document.getElementById('reportForm').reset();
+            archivos = [];
+            actualizarPreview();
         }
 
         function validarFormulario() {
-            const fecha = document.getElementById('fecha').value;
-            const edificio = document.getElementById('edificio').value;
-            const lugar = document.getElementById('lugar').value;
-            const tipo = document.getElementById('tipo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            
-            if (!fecha || !edificio || !lugar || !tipo || !descripcion) {
-                alert('Por favor complete todos los campos obligatorios');
-                return false;
-            }
-            return true;
-        }
-
-        function enviarPorCorreo() {
-            if (!validarFormulario()) return;
-            
-            const fecha = document.getElementById('fecha').value;
             const edificio = document.getElementById('edificio').value;
             const lugar = document.getElementById('lugar').value;
             const tipo = document.getElementById('tipo').value;
             const descripcion = document.getElementById('descripcion').value;
             const riesgo = document.getElementById('riesgo').value;
-            
-            const texto = `Reporte OBSERVA+\n\nFecha: ${fecha}\nEdificio: ${edificio}\nLugar: ${lugar}\nTipo: ${tipo}\nRiesgo: ${riesgo}\n\nDescripción:\n${descripcion}\n\nAdjunte fotos manualmente al responder este correo.`;
-            const body = encodeURIComponent(texto);
-            window.location.href = `mailto:paetq@tqgrupo.com?subject=Reporte%20OBSERVA+&body=${body}`;
+
+            if (!edificio || !lugar || !tipo || !descripcion || !riesgo) {
+                alert('Por favor, complete todos los campos obligatorios.');
+                return false;
+            }
+            return true;
         }
 
-        function enviarWhatsApp() {
+        function abrirCamara() {
+            modoVideo = false;
+            document.getElementById('cameraModal').classList.add('visible');
+            navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
+                stream = s;
+                document.getElementById('video').srcObject = s;
+            }).catch(e => alert('Error: ' + e.message));
+        }
+
+        function abrirGrabadora() {
+            modoVideo = true;
+            document.getElementById('cameraModal').classList.add('visible');
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => {
+                stream = s;
+                document.getElementById('video').srcObject = s;
+            }).catch(e => alert('Error: ' + e.message));
+        }
+
+        function tomarFoto() {
+            if (modoVideo) {
+                grabarVideo();
+            } else {
+                const canvas = document.getElementById('canvas');
+                const video = document.getElementById('video');
+                const ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0);
+                canvas.toBlob(blob => {
+                    archivos.push(blob);
+                    actualizarPreview();
+                    cerrarCamara();
+                });
+            }
+        }
+
+        function grabarVideo() {
+            const mediaRecorder = new MediaRecorder(stream);
+            const chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                archivos.push(blob);
+                actualizarPreview();
+                cerrarCamara();
+            };
+            mediaRecorder.start();
+            setTimeout(() => mediaRecorder.stop(), 5000);
+        }
+
+        function cerrarCamara() {
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+            document.getElementById('cameraModal').classList.remove('visible');
+            document.getElementById('video').srcObject = null;
+        }
+
+        function agregarArchivo(event) {
+            const files = event.target.files;
+            for (let file of files) {
+                archivos.push(file);
+            }
+            actualizarPreview();
+        }
+
+        function actualizarPreview() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+            archivos.forEach((archivo, index) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                const isVideo = archivo.type.startsWith('video/');
+                const src = URL.createObjectURL(archivo);
+                if (isVideo) {
+                    const video = document.createElement('video');
+                    video.src = src;
+                    video.controls = false;
+                    div.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    div.appendChild(img);
+                }
+                const btn = document.createElement('button');
+                btn.className = 'remove-btn';
+                btn.textContent = 'X';
+                btn.onclick = () => {
+                    archivos.splice(index, 1);
+                    actualizarPreview();
+                };
+                div.appendChild(btn);
+                container.appendChild(div);
+            });
+        }
+
+        function enviarCorreo() {
             if (!validarFormulario()) return;
-            
             const fecha = document.getElementById('fecha').value;
             const edificio = document.getElementById('edificio').value;
             const tipo = document.getElementById('tipo').value;
             const descripcion = document.getElementById('descripcion').value;
+            const texto = `REPORTE OBSERVA+\n\nFecha: ${fecha}\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripción: ${descripcion}\n\nAdjunto evidencias visuales`;
+            const body = encodeURIComponent(texto);
+            window.location.href = `mailto:paeto@tgrupo.com?subject=Reporte%20OBSERVA%2B&body=${body}`;
+        }
+
+        function enviarWhatsApp() {
+            if (!validarFormulario()) return;
+            const fecha = document.getElementById('fecha').value;
+            const edificio = document.getElementById('edificio').value;
+            const tipo = document.getElementById('tipo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            let mensaje = `*REPORTE OBSERVA+*\n\n*Fecha:* ${fecha}\n*Edificio:* ${edificio}\n*Tipo:* ${tipo}\n*Descripción:* ${descripcion}`;
             
-            const texto = `*REPORTE OBSERVA+*\n\nFecha: ${fecha}\nEdificio: ${edificio}\nTipo: ${tipo}\nDescripción: ${descripcion}\n\nEnviado desde OBSERVA+`;
-            const mensaje = encodeURIComponent(texto);
-            window.open(`https://wa.me/?text=${mensaje}`, '_blank');
+            if (archivos.length > 0) {
+                mensaje += `\n\n*Evidencias adjuntas:* ${archivos.length} archivo(s)`;
+            }
+            
+            const texto = encodeURIComponent(mensaje);
+            window.open(`https://wa.me/?text=${texto}`, '_blank');
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>
